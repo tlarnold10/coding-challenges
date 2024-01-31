@@ -13,6 +13,8 @@ var outputFilename string
 var data []byte
 var err error
 var filename string
+var results string
+var previousLine string
 
 func postResults(results string) {
    if (outputFilename != "") {
@@ -26,7 +28,7 @@ func postResults(results string) {
   } 
 }
 
-func standardMode(args []string) {
+func parseArgs(args []string) []string {
   filename = args[0] 
   if (len(args) == 2) {
     outputFilename = args[1]
@@ -45,10 +47,30 @@ func standardMode(args []string) {
     }
   }
 
-  var results string
-  var previousLine string
-  dataString := strings.Split(string(data), "\n")
-  
+  return strings.Split(string(data), "\n")
+}
+
+func createCounts(dataString []string) map[string]int {
+  countResults := make(map[string]int)
+  for i := 0; i < len(dataString); i++ {
+    if (previousLine == "") {
+      previousLine = dataString[i]
+      countResults[dataString[i]] = 1
+    } else {
+      if (dataString[i] != previousLine) {
+        countResults[dataString[i]] = 1
+      } else {
+        countResults[dataString[i]] = countResults[dataString[i]] + 1
+      }
+      previousLine = dataString[i]
+    }
+  }
+
+  return countResults
+}
+
+func standardMode(args []string) {
+  dataString := parseArgs(args)
   for i := 0; i < len(dataString); i++ {
     if (previousLine == "") {
       previousLine = dataString[i]
@@ -64,42 +86,8 @@ func standardMode(args []string) {
 }
 
 func countMode(args []string) {
-  filename = args[1] 
-  if (len(args) == 3) {
-    outputFilename = args[2]
-  }
-
-  if (filename != "-") {
-    data, err = os.ReadFile(filename)
-    if (err != nil) {
-      log.Fatal("Error reading file", err)
-    }
-  } else {
-    scanner := bufio.NewScanner(os.Stdin)
-    for scanner.Scan() {
-      data = append(data, scanner.Bytes()...)
-      data = append(data, []byte("\n")...)
-    }
-  }
-
-  countResults := make(map[string]int)
-  var results string
-  var previousLine string
-  dataString := strings.Split(string(data), "\n")
-  
-  for i := 0; i < len(dataString); i++ {
-    if (previousLine == "") {
-      previousLine = dataString[i]
-      countResults[dataString[i]] = 1
-    } else {
-      if (dataString[i] != previousLine) {
-        countResults[dataString[i]] = 1
-      } else {
-        countResults[dataString[i]] = countResults[dataString[i]] + 1
-      }
-      previousLine = dataString[i]
-    }
-  }
+  dataString := parseArgs(args[1:])
+  countResults := createCounts(dataString)
 
   for key, value := range countResults {
     if (key != "") {
@@ -110,42 +98,8 @@ func countMode(args []string) {
 }
 
 func repeatMode(args []string) {
-  filename = args[1] 
-  if (len(args) == 3) {
-    outputFilename = args[2]
-  }
-
-  if (filename != "-") {
-    data, err = os.ReadFile(filename)
-    if (err != nil) {
-      log.Fatal("Error reading file", err)
-    }
-  } else {
-    scanner := bufio.NewScanner(os.Stdin)
-    for scanner.Scan() {
-      data = append(data, scanner.Bytes()...)
-      data = append(data, []byte("\n")...)
-    }
-  }
-
-  countResults := make(map[string]int)
-  var results string
-  var previousLine string
-  dataString := strings.Split(string(data), "\n")
-  
-  for i := 0; i < len(dataString); i++ {
-    if (previousLine == "") {
-      previousLine = dataString[i]
-      countResults[dataString[i]] = 1
-    } else {
-      if (dataString[i] != previousLine) {
-        countResults[dataString[i]] = 1
-      } else {
-        countResults[dataString[i]] = countResults[dataString[i]] + 1
-      }
-      previousLine = dataString[i]
-    }
-  }
+  dataString := parseArgs(args[1:])
+  countResults := createCounts(dataString)
 
   for key, value := range countResults {
     if (key != "" && value > 1) {
@@ -156,42 +110,8 @@ func repeatMode(args []string) {
 }
 
 func uniqueMode(args []string) {
-  filename = args[1] 
-  if (len(args) == 3) {
-    outputFilename = args[2]
-  }
-
-  if (filename != "-") {
-    data, err = os.ReadFile(filename)
-    if (err != nil) {
-      log.Fatal("Error reading file", err)
-    }
-  } else {
-    scanner := bufio.NewScanner(os.Stdin)
-    for scanner.Scan() {
-      data = append(data, scanner.Bytes()...)
-      data = append(data, []byte("\n")...)
-    }
-  }
-
-  countResults := make(map[string]int)
-  var results string
-  var previousLine string
-  dataString := strings.Split(string(data), "\n")
-  
-  for i := 0; i < len(dataString); i++ {
-    if (previousLine == "") {
-      previousLine = dataString[i]
-      countResults[dataString[i]] = 1
-    } else {
-      if (dataString[i] != previousLine) {
-        countResults[dataString[i]] = 1
-      } else {
-        countResults[dataString[i]] = countResults[dataString[i]] + 1
-      }
-      previousLine = dataString[i]
-    }
-  }
+  dataString := parseArgs(args[1:])
+  countResults := createCounts(dataString)
 
   for key, value := range countResults {
     if (key != "" && value == 1) {
