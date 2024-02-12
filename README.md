@@ -12,3 +12,4 @@ This repo is used to store my coding challenges from https://codingchallenges.fy
 3. Build your own uniq tool: https://codingchallenges.fyi/challenges/challenge-uniq/
     - Written in Go.
     - To run the tool, naviage to the uniqTool directory and run `uniqTool`. You can then specify the mode as an optional argument (-c to add a line count for each corresponding line, -d to just display only repeated lines, -u to display only unique lines, or nothing in order to run in standard mode, which will not display any duplicated lines), input file (required argument either the file name or `-` to read from the standard input), and output file (optional argument).
+4. Build your own Discord bot: https://codingchallenges.fyi/challenges/challenge-discord
