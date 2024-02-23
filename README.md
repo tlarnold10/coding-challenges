@@ -22,3 +22,5 @@ This repo is used to store my coding challenges from https://codingchallenges.fy
         4. `!list`: will grab and list all the Coding Challenges from the json file.
         5. `!add`: will take a url of a Coding Challenge, confirm it is a valid url and then respond with the title from the html page.
     - Next steps would be to add the functionality to run on something other than my PC as well as actually add the coding challenge to my local json.
+5. Build your own CronTab Tool (https://codingchallenges.fyi/challenges/challenge-cron)
+
