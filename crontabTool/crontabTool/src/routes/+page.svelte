@@ -3,6 +3,8 @@
 </script>
 
 <div class="container mx-auto">
+<br>
+
 <h1 class="text-3xl font-bold underline">Trevor Arnold's Crontab Tool</h1>
 
 <br>
@@ -11,10 +13,47 @@
 
 <br>
 
+<h3>Pattern</h3>
+<div>
+  <table class="w-full border-collapse bg-white text-left text-sm text-gray-500">
+    <thead class="bg-gray-50">
+      <tr>
+        <th scope="col" class="px-6 py-4 font-medium text-gray-900">Position</th>
+        <th scope="col" class="px-6 py-4 font-medium text-gray-900">Purpose</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100 border-t border-gray-100">
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-6 py-4">1</td>
+        <td class="px-6 py-4">minute (0-59)</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-6 py-4">2</td>
+        <td class="px-6 py-4">hour (0-23)</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-6 py-4">3</td>
+        <td class="px-6 py-4">day of the month (1-31)</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-6 py-4">4</td>
+        <td class="px-6 py-4">month (1-12)</td>
+      </tr>
+      <tr class="odd:bg-white even:bg-gray-50">
+        <td class="px-6 py-4">5</td>
+        <td class="px-6 py-4">day of the week (0-6) (Sunday to Saturday)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<br>
+
 <CronForm />
 
 <br>
 
+<h3>Allowed Characters</h3>
 <div>
   <table class="w-full border-collapse bg-white text-left text-sm text-gray-500">
     <thead class="bg-gray-50">

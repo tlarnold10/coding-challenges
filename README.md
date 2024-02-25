@@ -23,4 +23,7 @@ This repo is used to store my coding challenges from https://codingchallenges.fy
         5. `!add`: will take a url of a Coding Challenge, confirm it is a valid url and then respond with the title from the html page.
     - Next steps would be to add the functionality to run on something other than my PC as well as actually add the coding challenge to my local json.
 5. Build your own CronTab Tool (https://codingchallenges.fyi/challenges/challenge-cron)
-
+    - Written in TypeScript, utilizing the Svelte framework and Bun package manager.
+    - To run the tool, navigate to the `crontabTool/crontabTool` directory and run `bun --bun run dev`
+    - Navigate to `http://localhost:5173` in your browser to use the crontab tool.
+    - On the page there are some notes about using crontab and a pattern input box to enter your pattern. A new box will appear with the human readable version of the crotab pattern, or an error if it is not a valid crontab pattern.
