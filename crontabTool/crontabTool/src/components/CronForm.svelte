@@ -1,7 +1,8 @@
 <script lang=ts>
   
   import { MonthEnum } from "../utils/MonthEnum";
-  import {errorCheck, digitHelper, validNumberHelper} from "../utils/functions";
+  import { WeekEnum } from "../utils/WeekEnum";
+  import { errorCheck, digitHelper, validNumberHelper, stringMonthToEnum, stringDayOfWeekToEnum } from "../utils/functions";
 
   var showResults = false;
   var hasError = false;
@@ -59,7 +60,7 @@
 
   function processHour(value: string): string {
     let humanHour = "";
-    if (value == "*") {
+    if (value == "*" || value == "@hourly") {
       humanHour = "Every hour";
     }
     else if (1 <= Number(value) && Number(value) <= 23) {
@@ -112,7 +113,7 @@
       humanDayOfMonth = "every day of the month";
     }
     else if (1 <= Number(value) && Number(value) <= 31) {
-      humanDayOfMonth = "On " + digitHelper(value) + " of the month";
+      humanDayOfMonth = "on " + digitHelper(value) + " of the month";
     }
     else if (value.includes(",")) {
       let multipleValues: string[] = value.split(",");
@@ -133,7 +134,7 @@
       if (multipleValues.length != 2 || !validNumberHelper(multipleValues[0], 31, 0) || !validNumberHelper(multipleValues[1], 31, 0)) {
         return "";
       }
-      humanHour = "Each day of the month from " + digitHelper(multipleValues[0]) + " through " + digitHelper(multipleValues[1]); 
+      humanHour = "each day of the month from " + digitHelper(multipleValues[0]) + " through " + digitHelper(multipleValues[1]); 
     }
     else if (value.includes("/")) {
       let multipleValues: string[] = value.split("/");
@@ -145,31 +146,125 @@
       }
       
       if (multipleValues.length == 1 || multipleValues[0] == "*") {
-        humanDayOfMonth = "Every "+ multipleValues[0] + " days of the month";
+        humanDayOfMonth = "every "+ multipleValues[0] + " days of the month";
       }
       else if (multipleValues.length == 2) {
-        humanDayOfMonth = "Ever " + multipleValues[1] + " day of the month starting at " + digitHelper(multipleValues[0]);
+        humanDayOfMonth = "ever " + multipleValues[1] + " day of the month starting at " + digitHelper(multipleValues[0]);
       }
     }
 
-return humanDayOfMonth;
+    return humanDayOfMonth;
   }
 
   function processMonth(value: string): string {
     let humanMonth = "";
-    switch (value) {
-      case "*":
-        humanMonth = "every month";
+    if (value == "*") {
+      humanMonth = "every month";
     }
+    else if (1 <= Number(value) && Number(value) <= 12) {
+      humanMonth = "in " + MonthEnum[stringMonthToEnum(value)];
+    }
+    else if (stringMonthToEnum(value) != 0) {
+      humanMonth = "in " + MonthEnum[stringMonthToEnum(value)];
+    }
+    else if (value.includes(",")) {
+      let multipleValues: string[] = value.split(",");
+      for (let i: int = 0; i < multipleValues.length; i++) {
+        if (i == (multipleValues.length - 1)) {
+          humanMonth = humanMonth + ", and " + MonthEnum[stringMonthToEnum(multipleValues[i])];
+        }
+        else if (i == 0) {
+          humanMonth = MonthEnum[stringMonthToEnum(multipleValues[i])];
+        }
+        else {
+          humanMonth = humanMonth + ", " + MonthEnum[stringMonthToEnum(multipleValues[i])];
+        }
+      }
+    }
+    else if (value.includes("-")) {
+      let multipleValues: string[] = value.split("-");
+      if (multipleValues.length != 2 || stringMonthToEnum(multipleValues[0]) == 0 || 
+          stringMonthToEnum(multipleValues[1]) == 0) {
+        return "";
+      }
+      humanMonth = "each month from " + MonthEnum[stringMonthToEnum(multipleValues[0])] + 
+                    " through " + MonthEnum[stringMonthToEnum(multipleValues[1])]; 
+    }
+    else if (value.includes("/")) {
+      let multipleValues: string[] = value.split("/");
+      if (multipleValues.length == 2 && (stringMonthToEnum(multipleValues[0]) == 0 || 
+          stringMonthToEnum(multipleValues[1]) == 0)) {
+        return "";
+      }
+      else if (multipleValues.length == 1 && stringMonthToEnum(multipleValues[0]) == 0) {
+        return "";
+      }
+      
+      if (multipleValues.length == 1 || multipleValues[0] == "*") {
+        humanMonth = "every "+ MonthEnum[stringMonthToEnum(multipleValues[0])] + " month";
+      }
+      else if (multipleValues.length == 2) {
+        humanMonth = "ever " + multipleValues[1] + 
+                          " month starting at " + MonthEnum[stringMonthToEnum(multipleValues[0])];
+      }
+    }
+    
     return humanMonth;
   }
 
   function processDayOfWeek(value: string): string {
     let humanDayOfWeek = "";
-    switch (value) {
-      case "*":
-        humanDayOfWeek = "every day of the week";
+    if (value == "*") {
+      humanDayOfWeek = "every day of the week";
     }
+    else if (1 <= Number(value) && Number(value) <= 7) {
+      humanDayOfWeek = "on " + WeekEnum[stringDayOfWeekToEnum(value)];
+    }
+    else if (stringDayOfWeekToEnum(value) != 0) {
+      humanDayOfWeek = "on " + WeekEnum[stringDayOfWeekToEnum(value)];
+    }
+    else if (value.includes(",")) {
+      let multipleValues: string[] = value.split(",");
+      for (let i: int = 0; i < multipleValues.length; i++) {
+        if (i == (multipleValues.length - 1)) {
+          humanDayOfWeek = humanDayOfWeek + ", and " + WeekEnum[stringDayOfWeekToEnum(multipleValues[i])];
+        }
+        else if (i == 0) {
+          humanDayOfWeek = WeekEnum[stringDayOfWeekToEnum(multipleValues[i])];
+        }
+        else {
+          humanDayOfWeek = humanDayOfWeek + ", " + WeekEnum[stringDayOfWeekToEnum(multipleValues[i])];
+        }
+      }
+    }
+    else if (value.includes("-")) {
+      let multipleValues: string[] = value.split("-");
+      if (multipleValues.length != 2 || stringDayOfWeekToEnum(multipleValues[0]) == 0 || 
+          stringDayOfWeekToEnum(multipleValues[1]) == 0) {
+        return "";
+      }
+      humanDayOfWeek = "each day of the week from " + WeekEnum[stringDayOfWeekToEnum(multipleValues[0])] + 
+                    " through " + WeekEnum[stringDayOfWeekToEnum(multipleValues[1])]; 
+    }
+    else if (value.includes("/")) {
+      let multipleValues: string[] = value.split("/");
+      if (multipleValues.length == 2 && (stringDayOfWeekToEnum(multipleValues[0]) == 0 || 
+          stringDayOfWeekToEnum(multipleValues[1]) == 0)) {
+        return "";
+      }
+      else if (multipleValues.length == 1 && stringDayOfWeekToEnum(multipleValues[0]) == 0) {
+        return "";
+      }
+      
+      if (multipleValues.length == 1 || multipleValues[0] == "*") {
+        humanDayOfWeek = "every "+ WeekEnum[stringDayOfWeekToEnum(multipleValues[0])] + " day of the week";
+      }
+      else if (multipleValues.length == 2) {
+        humanDayOfWeek = "ever " + multipleValues[1] + " days of the week starting at " + 
+                          WeekEnum[stringDayOfWeekToEnum(multipleValues[0])];
+      }
+    }
+
     return humanDayOfWeek;
   }
 
@@ -181,6 +276,36 @@ return humanDayOfMonth;
     hasError = errorCheck(pattern);
     if (hasError) {
       return;
+    }
+    if (pattern.length == 1) {
+      if (pattern[0] == "@hourly") {
+        showResults = true;
+        results = "At the start of every hour";
+      }
+      else if (pattern[0] == "@daily") {
+        showResults = true;
+        results = "At 12:00 AM every day";
+      }
+      else if (pattern[0] == "@weekly") {
+        showResults = true;
+        results = "At 12:00am on Sunday";
+      }
+      else if (pattern[0] == "@monthly") {
+        showResults = true;
+        results = "At 12:00am on the 1st every month";
+      }
+      else if (pattern[0] == "@yearly") {
+        showResults = true;
+        results = "At 12:00am on January 1st";
+      }
+      else if (pattern[0] == "@annually") {
+        showResults = true;
+        results = "At 12:00am on January 1st";
+      }
+      else {
+        hasError = true;
+        return;
+      }
     }
     let currentVal = "";
     for (let i: int = 0; i < pattern.length; i++) {

@@ -5,5 +5,6 @@ export enum WeekEnum {
   Wednesday = 4,
   Thursday = 5,
   Friday = 6,
-  Saturday = 7
+  Saturday = 7,
+  NA = 0
 }
