@@ -11,7 +11,7 @@ This repo is used to store my coding challenges from https://codingchallenges.fy
     - In order to run the http web server, navigate to the webServer directory and run `webServer`. Then open another terminal and run the `curl http://localhost:6969` command. Otherwise, you can open a browser and enter `http://localhost:6969` in the address bar. Currently, the only valid routes are `/` and `/about`, all other routes result in a 404 error.
 3. Build your own uniq tool: https://codingchallenges.fyi/challenges/challenge-uniq/
     - Written in Go.
-    - To run the tool, naviage to the uniqTool directory and run `uniqTool`. You can then specify the mode as an optional argument (-c to add a line count for each corresponding line, -d to just display only repeated lines, -u to display only unique lines, or nothing in order to run in standard mode, which will not display any duplicated lines), input file (required argument either the file name or `-` to read from the standard input), and output file (optional argument).
+    - To run the tool, navigate to the uniqTool directory and run `uniqTool`. You can then specify the mode as an optional argument (-c to add a line count for each corresponding line, -d to just display only repeated lines, -u to display only unique lines, or nothing in order to run in standard mode, which will not display any duplicated lines), input file (required argument either the file name or `-` to read from the standard input), and output file (optional argument).
 4. Build your own Discord bot: https://codingchallenges.fyi/challenges/challenge-discord
     - Written in Go.
     - To run the tool, navigate to the disdaccbot directory and run `disdaccbot` and provide the discord bot token after the `-t` flag.
@@ -22,3 +22,8 @@ This repo is used to store my coding challenges from https://codingchallenges.fy
         4. `!list`: will grab and list all the Coding Challenges from the json file.
         5. `!add`: will take a url of a Coding Challenge, confirm it is a valid url and then respond with the title from the html page.
     - Next steps would be to add the functionality to run on something other than my PC as well as actually add the coding challenge to my local json.
+5. Build your own CronTab Tool (https://codingchallenges.fyi/challenges/challenge-cron)
+    - Written in TypeScript, utilizing the Svelte framework and Bun package manager.
+    - To run the tool, navigate to the `crontabTool/crontabTool` directory and run `bun --bun run dev`
+    - Navigate to `http://localhost:5173` in your browser to use the crontab tool.
+    - On the page there are some notes about using crontab and a pattern input box to enter your pattern. A new box will appear with the human readable version of the crotab pattern, or an error if it is not a valid crontab pattern.
