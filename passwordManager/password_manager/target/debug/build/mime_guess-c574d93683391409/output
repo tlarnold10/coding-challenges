@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=/mnt/e/programming/coding-challenges/passwordManager/password_manager/target/debug/build/mime_guess-c574d93683391409/out/mime_types_generated.rs
