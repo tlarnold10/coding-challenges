@@ -1,1 +1,2 @@
-passwordManager/password_manager/
+passwordManager/password_manager/target/
+.db

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Hello world, and {{ name }}!!</h1>
+<form id="add-form">
+  <input placeholder="add account" required type=text name="account">
+  <input placeholder="add password" required type=text name="password">
+  <button class="button" hx-post="/password">
+    Add Password
+  </button>
+</form>
+<div class="grid">
+{% for password in passwords %}
+  <div class="cell">Account: {{ password.account }} Password: {{ password.password }}</div>
+{% endfor %}
+</div>
+{% endblock %}

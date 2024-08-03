@@ -11,10 +11,14 @@ use axum::{
 // use serde::{ Deserialize };
 use templates::{ Index, PasswordItem };
 use askama::Template;
+use std::env;
+use rusqlite::{ Connection, Result };
 
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
+    // connecting to sqlite
+    let conn = Connection::open("passwords.db");
+
     let app = Router::new()
         .route("/", get(index))
         .route("/password", post(create_password));
