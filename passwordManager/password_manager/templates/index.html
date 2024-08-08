@@ -5,13 +5,14 @@
 <form id="add-form">
   <input placeholder="add account" required type=text name="account">
   <input placeholder="add password" required type=text name="password">
-  <button class="button" hx-post="/password">
+  <input placeholder="add username" required type=text name="username">
+  <button class="button" hx-post="/password" hx-target="#passwords" hx-swap="beforebegin">
     Add Password
   </button>
 </form>
-<div class="grid">
+<div id="passwords">
 {% for password in passwords %}
-  <div class="cell">Account: {{ password.account }} Password: {{ password.password }}</div>
+  <div>Account: {{ password.account }} Password: {{ password.password }} Username: {{ password.username }}</div>
 {% endfor %}
 </div>
 {% endblock %}

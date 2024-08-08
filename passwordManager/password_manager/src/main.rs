@@ -9,10 +9,12 @@ use axum::{
     extract::Form
 };
 // use serde::{ Deserialize };
-use templates::{ Index, PasswordItem };
+use templates::{ Index, PasswordItem, PasswordItemSnippet };
 use askama::Template;
 use std::env;
 use rusqlite::{ Connection, Result };
+use lazy_static::lazy_static;
+use tokio::sync::Mutex;
 
 #[tokio::main]
 async fn main() {
@@ -32,18 +34,34 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+// lazy static is a macro for static variables that are defined at runtime and
+// persist throughout the life of the program
+lazy_static! {
+    static ref DATA: Mutex<Vec<PasswordItem>> = Mutex::new(Vec::new());
+}
+
+fn print_vec(items: &[PasswordItem]) -> () {
+    let v_iter = items.iter();
+    for item in v_iter {
+        println!("password: {}, account: {}, username: {}", item.password, item.account, item.username);
+    }
+}
+
 async fn index() -> impl IntoResponse {
     let mut vec: Vec<PasswordItem> = Vec::new();
-    vec.push({ PasswordItem { 
-        account: "test".to_string(),
-        password: "thing".to_string()
+    let mut passwords = DATA.lock().await;
+    passwords.push({ PasswordItem {
+        password: "test".to_string(),
+        username: "more testing".to_string(),
+        account: "thing".to_string()
     }});
 
-    vec.push({ PasswordItem {
+    passwords.push({ PasswordItem {
         account: "another one".to_string(),
-        password: "wouldn't you like to know!".to_string()
+        password: "wouldn't you like to know!".to_string(),
+        username: "something".to_string()
     }});
-    let template = Index { name: "trevor".to_string(), passwords: vec };
+    let template = Index { name: "trevor".to_string(), passwords: passwords.to_vec() };
     match template.render() {
         Ok(html) => Html(html).into_response(),
         Err(err) => (
@@ -53,12 +71,27 @@ async fn index() -> impl IntoResponse {
     }
 }
 
-async fn create_password(Form(payload): Form<PasswordItem>) -> StatusCode {
-    println!("payload information: {} {}", payload.account, payload.password);
+async fn create_password(Form(payload): Form<PasswordItem>) -> impl IntoResponse {
+    println!("payload information: {} {} {}", payload.account, payload.password, payload.username);
+    let mut passwords = DATA.lock().await;
+    let password = payload.password;
+    let account = payload.account;
+    let username = payload.username;
     let password = PasswordItem {
-        account: "test".to_string(),
-        password: "more testing".to_string()
+        account: account.clone(),
+        password: password.clone(),
+        username: username.clone()
     };
-
-    StatusCode::CREATED
+    passwords.push(password.clone());
+    print_vec(&passwords);
+    let added_item = format!("Account: {} Password: {} Username: {}", password.account, password.password, password.username);
+    // return Html(&added_item).into_response();
+    let template = PasswordItemSnippet { snippet: added_item };
+    match template.render() {
+        Ok(html) => Html(html).into_response(),
+        Err(err) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to render template. Error: {err}"),
+        ).into_response(),
+    }
 }
