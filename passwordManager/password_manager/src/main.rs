@@ -15,24 +15,7 @@ use std::env;
 use rusqlite::{ Connection, Result, Statement };
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
-
-#[tokio::main]
-async fn main() {
-    // connecting to sqlite
-    // let conn = Connection::open("passwords.db");
-
-    let app = Router::new()
-        .route("/", get(index))
-        .route("/password", post(create_password));
-    
-    // run server
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8675")
-        .await
-        .unwrap();
-
-    println!("listing on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
-}
+use std::io;
 
 // lazy static is a macro for static variables that are defined at runtime and
 // persist throughout the life of the program
@@ -46,6 +29,61 @@ fn print_vec(items: &[PasswordItem]) -> () {
     for item in v_iter {
         println!("password: {}, account: {}, username: {}", item.password, item.account, item.username);
     }
+}
+
+#[tokio::main]
+async fn main() {
+    // connecting to sqlite and obtain master password
+    let query = "SELECT password FROM passwords WHERE account = 'master'";
+    let conn = CONN.lock().await;
+    let mut stmt = conn.prepare(&query).unwrap();
+    let master: String = stmt.query_row([], |row| row.get(0)).unwrap();
+    let mut logged_in = false;
+    let mut input = String::new();
+    let mut attempts: u32 = 0;
+
+    // check for accurate master password input
+    while (!logged_in) {
+        attempts = attempts + 1;
+        input.clear();
+        if (attempts == 1) {
+            println!("Enter master password: ");
+        }
+        else {
+            println!("Try again: ");
+        }
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        if (master.eq(&input.trim())) {
+            logged_in = true;
+        }
+        else {
+            println!("Incorrect master password");
+        }
+
+        // if user is not able to enter the correct password 3 times, program errors out
+        if (attempts > 2) {
+            panic!("Incorrect master password entered 3 times... goodbye");
+        }
+    }
+    
+    // need to drop variables in order for database to be connected later
+    drop(stmt);
+    drop(conn);
+
+    // setting up routes
+    let app = Router::new()
+        .route("/", get(index))
+        .route("/password", post(create_password));
+    
+    // run server
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:8675")
+        .await
+        .unwrap();
+
+    println!("listing on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn index() -> impl IntoResponse {
