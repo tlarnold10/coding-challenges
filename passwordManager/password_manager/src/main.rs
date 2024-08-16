@@ -11,17 +11,20 @@ use axum::{
 // use serde::{ Deserialize };
 use templates::{ Index, PasswordItem, PasswordItemSnippet };
 use askama::Template;
-use std::env;
+use core::str;
+use std::{env, f32::consts::E};
 use rusqlite::{ Connection, Result, Statement };
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
 use std::io;
+use magic_crypt::{ new_magic_crypt, MagicCryptTrait, MagicCrypt64 };
 
 // lazy static is a macro for static variables that are defined at runtime and
 // persist throughout the life of the program
 lazy_static! {
     static ref DATA: Mutex<Vec<PasswordItem>> = Mutex::new(Vec::new());
     static ref CONN: Mutex<Connection> = Mutex::new(Connection::open("passwords.db").unwrap());
+    static ref KEY: MagicCrypt64 = new_magic_crypt!("magickey", 64);
 }
 
 fn print_vec(items: &[PasswordItem]) -> () {
@@ -33,14 +36,20 @@ fn print_vec(items: &[PasswordItem]) -> () {
 
 #[tokio::main]
 async fn main() {
-    // connecting to sqlite and obtain master password
-    let query = "SELECT password FROM passwords WHERE account = 'master'";
+    // connecting to sqlite, obtain master password, and decrypt it
+    let query = "SELECT password FROM passwords WHERE account = 'Master'";
+    let crypt = KEY.clone();
     let conn = CONN.lock().await;
     let mut stmt = conn.prepare(&query).unwrap();
     let master: String = stmt.query_row([], |row| row.get(0)).unwrap();
     let mut logged_in = false;
     let mut input = String::new();
     let mut attempts: u32 = 0;
+    let crypt = crypt.decrypt_base64_to_string(master.clone());
+    let decrypted_master = match crypt {
+        Ok(result) => result,
+        Err(e) => panic!("Error in Magic Crypt {}", e)
+    };
 
     // check for accurate master password input
     while (!logged_in) {
@@ -55,7 +64,7 @@ async fn main() {
         io::stdin()
             .read_line(&mut input)
             .expect("Failed to read line");
-        if (master.eq(&input.trim())) {
+        if (decrypted_master.eq(&input.trim())) {
             logged_in = true;
         }
         else {
@@ -86,10 +95,13 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+// get endpoint for index
 async fn index() -> impl IntoResponse {
-    let mut vec: Vec<PasswordItem> = Vec::new();
+    // read in all passwords from database and display them to the screen
+    let crypt = KEY.clone();
     let mut passwords = DATA.lock().await;
-    let query = "SELECT account, username, password FROM passwords";
+    passwords.clear();
+    let query = "SELECT account, username, password FROM passwords WHERE account != 'Master'";
     let conn = CONN.lock().await;
     let mut stmt = conn.prepare(&query).unwrap();
     let passwords_iter = stmt.query_map([], |row| {
@@ -101,14 +113,24 @@ async fn index() -> impl IntoResponse {
     });
 
     for password in passwords_iter.unwrap() {
-        let temp_password = password.unwrap();
+        let temp_password = password.unwrap(); 
+
+        // decrypt the encrypted password so that the user could actually see it in the UI
+        let crypt = crypt.decrypt_base64_to_string(temp_password.password.clone());
+        let decrypted_password = match crypt {
+            Ok(result) => result,
+            Err(e) => panic!("Error in Magic Crypt {}", e)
+        };
+        
+        // adding password to htmx list of passwords
         passwords.push({ PasswordItem {
             account: temp_password.account,
             username: temp_password.username,
-            password: temp_password.password
+            password: decrypted_password.clone()
         }})
     } 
 
+    // index page will display the form and all the data
     let template = Index { name: "trevor".to_string(), passwords: passwords.to_vec() };
     match template.render() {
         Ok(html) => Html(html).into_response(),
@@ -119,24 +141,32 @@ async fn index() -> impl IntoResponse {
     }
 }
 
+// post endpoint for creating a password
 async fn create_password(Form(payload): Form<PasswordItem>) -> impl IntoResponse {
-    println!("payload information: {} {} {}", payload.account, payload.password, payload.username);
+    let mcrypt = KEY.clone();
     let mut passwords = DATA.lock().await;
-    let password = payload.password;
+    
+    // encrypt password that will be written to the database
+    let encrypted_password = mcrypt.encrypt_str_to_base64(&payload.password);
     let account = payload.account;
+    let password = payload.password;
     let username = payload.username;
     let password = PasswordItem {
         account: account.clone(),
         password: password.clone(),
         username: username.clone()
     };
+
+    // add password to list of passwords for the htmx UI
     passwords.push(password.clone());
-    print_vec(&passwords);
+    // print_vec(&passwords);
     let query = format!("INSERT INTO passwords VALUES ('{}', '{}', '{}')", 
-                                    password.account.clone(), password.username.clone(), password.password.clone());
+                                    password.account.clone(), password.username.clone(), encrypted_password.clone());
     CONN.lock().await.execute(&query, ()).unwrap();
+    println!("Password added");
     let added_item = format!("Account: {} Password: {} Username: {}", password.account, password.password, password.username);
-    // return Html(&added_item).into_response();
+    
+    // need to wrap password element into html to be returned to UI template
     let template = PasswordItemSnippet { snippet: added_item };
     match template.render() {
         Ok(html) => Html(html).into_response(),

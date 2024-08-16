@@ -3,8 +3,11 @@
 {% block content %}
 <h1>Hello world, and {{ name }}!!</h1>
 <form id="add-form">
+  <label>Account: </label>
   <input placeholder="add account" required type=text name="account">
+  <label>Password: </label>
   <input placeholder="add password" required type=text name="password">
+  <label>Username: </label>
   <input placeholder="add username" required type=text name="username">
   <button class="button" hx-post="/password" hx-target="#passwords" hx-swap="beforebegin">
     Add Password
