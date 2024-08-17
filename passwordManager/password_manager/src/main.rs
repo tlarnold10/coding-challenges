@@ -3,16 +3,14 @@ mod templates;
 use axum::{
     routing::{ get, post },
     http::StatusCode,
-    Json,
     Router,
     response::{ IntoResponse, Html },
-    extract::{ Form, Extension }
+    extract::{ Form }
 };
 // use serde::{ Deserialize };
 use templates::{ Index, PasswordItem, PasswordItemSnippet };
 use askama::Template;
-use core::str;
-use std::{env, f32::consts::E};
+use std::{env, f32::consts::E, sync::MutexGuard};
 use rusqlite::{ Connection, Result, Statement };
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
@@ -41,7 +39,13 @@ async fn main() {
     let crypt = KEY.clone();
     let conn = CONN.lock().await;
     let mut stmt = conn.prepare(&query).unwrap();
-    let master: String = stmt.query_row([], |row| row.get(0)).unwrap();
+    let master: String = match stmt.query_row([], |row| row.get(0)) {
+        Ok(value) => value,
+        Err(e) => String::from("na") 
+    };
+    if (master.eq("na")) {
+        create_master_password(&conn);
+    }
     let mut logged_in = false;
     let mut input = String::new();
     let mut attempts: u32 = 0;
@@ -175,4 +179,21 @@ async fn create_password(Form(payload): Form<PasswordItem>) -> impl IntoResponse
             format!("Failed to render template. Error: {err}"),
         ).into_response(),
     }
+}
+
+fn create_master_password(conn: &tokio::sync::MutexGuard<Connection>) {
+    let mut input = String::new();
+    println!("No master password currently exists, please create: ");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
+
+    // encrypt master password
+    let mcrypt = KEY.clone();
+    let encrypted_password = mcrypt.encrypt_str_to_base64(&input.trim());
+    let query: String = format!("INSERT INTO passwords VALUES ('{}', '{}', '{}')", "Master", "", encrypted_password.clone());
+
+    // write encrypted master password to the database
+    conn.execute(&query, ()).unwrap();
+    println!("Master password created, please restart application");
 }

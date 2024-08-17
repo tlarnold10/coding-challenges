@@ -36,7 +36,7 @@ This repo is used to store my coding challenges from https://codingchallenges.fy
     - Written in Rust, using htmx for frontend interactivity, amux web framework, and askama for template rendering.
     - To run the tool, navigate to the `./passwordManager/password_manager` directory. Run `cargo run` to run the application.
         - You can also run `cargo build` to create the binary in the `target/debug` directory. From there you can run `./password_manager` to run the application.
-    - Before the server started, the master password would need to be entered in the terminal.
-        - At this time, I did not create the functionality to create a vault and set a master password. I just added it in the application by setting the logged_in variable in the code to true.
-        - Also errors out if no records are added, so that would need to be added as well. 
+    - Before the server started, the application checks if there is a Master password or not. 
+        - If no Master password has been created, it will ask you to create one. The application with then stop and you must restart it to get it working again. 
+        - If a Master password exists, you will be asked to enter it. You have three chances to do so.
     - Once the server is running, you can open up a web browser and navigate to `http://localhost:8675/` to see the web app.
